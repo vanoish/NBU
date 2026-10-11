@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" sizes="64x64" href="https://res.cloudinary.com/jb0nkyvj/image/upload/c_pad,w_64,h_64,b_transparent,f_png,q_auto/1000015593">
+    <meta name="description" content="Інтерактивний огляд дослідження НБУ про трансмісію облікової ставки та інфляційне таргетування в Україні у 2015–2021 роках.">
+    <link rel="alternate" hreflang="uk" href="?lang=uk">
+    <link rel="alternate" hreflang="en" href="?lang=en">
+    <title>Облікова ставка НБУ та інфляція | 2015–2021</title>
+    <script>
+        (() => {
+            const storageKey = 'nbu-policy-language-v1';
+            const supported = ['uk', 'en'];
+            const systemLanguage = () => {
+                const preferences = [...(navigator.languages || []), navigator.language, navigator.userLanguage, navigator.browserLanguage];
+                const normalized = preferences.find(Boolean)?.toLowerCase().replace(/_/g, '-');
+                return normalized?.split('-')[0] === 'uk' ? 'uk' : 'en';
+            };
+            const requestedLanguage = new URLSearchParams(window.location.search).get('lang')?.toLowerCase();
+            let language = supported.includes(requestedLanguage) ? requestedLanguage : systemLanguage();
+            try {
+                const saved = localStorage.getItem(storageKey);
+                if (!supported.includes(requestedLanguage) && supported.includes(saved)) language = saved;
+            } catch (_) {}
+            document.documentElement.lang = language;
+            document.documentElement.classList.add('i18n-pending');
+            window.__nbuInitialLanguage = language;
+        })();
+    </script>
+    <script>
+        (() => {
+            const navigation = performance.getEntriesByType('navigation')[0];
+            if (navigation?.type !== 'reload') return;
+            if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+            window.addEventListener('pageshow', () => {
+                const root = document.documentElement;
+                const previousScrollBehavior = root.style.scrollBehavior;
+                root.style.scrollBehavior = 'auto';
+                window.scrollTo(0, 0);
+                root.style.scrollBehavior = previousScrollBehavior;
+            }, { once: true });
+        })();
+    </script>
+    <style>
+        :root {
+            --bg: #FFFFFF;
+            --surface: #F2F5F3;
+            --green: #00873E;
+            --green-dark: #005F2B;
+            --black: #111111;
+            --white: #FFFFFF;
+            --gray: #E0E0E0;
+            --muted: #5B625D;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; border-radius: 0 !important; }
+        html { scroll-behavior: smooth; }
+        body { background: var(--bg); color: var(--black); font-family: Arial, Helvetica, sans-serif; line-height: 1.6; overflow-x: hidden; overflow-x: clip; }
+        a { color: inherit; }
+        button { font: inherit; }
+
+        header {
+            position: sticky; top: 0; z-index: 5; min-height: 72px; padding: 1rem max(1.25rem, calc((100vw - 1200px) / 2));
+            background: var(--white); border-bottom: 1px solid var(--gray); display: flex; justify-content: space-between; align-items: center; gap: 1.5rem;
+        }
+        .brand { display: flex; align-items: center; gap: .75rem; text-decoration: none; font-weight: 800; letter-spacing: .04em; }
+        .brand-divider {
+            width: 2px;
+            height: 28px;
+            flex: 0 0 2px;
+            background: var(--green);
+        }
+        .brand-mark {
+            display: block;
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            flex: 0 0 42px;
+        }
+        nav { display: flex; min-width: 0; align-items: center; gap: .45rem; }
+        nav a { padding: .45rem .65rem; color: var(--muted); font-size: .84rem; font-weight: 700; text-decoration: none; white-space: nowrap; border-bottom: 2px solid transparent; }
+        nav a:hover, nav a:focus-visible { color: var(--green-dark); border-color: transparent; }
+        .language-switch { display: flex; flex: 0 0 auto; border: 1px solid var(--gray); }
+        .language-switch button { min-width: 42px; padding: .4rem .55rem; border: 0; background: var(--white); color: var(--black); cursor: pointer; font-size: .8rem; font-weight: 800; transition: background-color .18s, color .18s; }
+        .language-switch button:hover { background: var(--white); }
+        .language-switch button[aria-pressed="true"] { background: var(--green-dark); color: var(--white); }
+        .language-switch button:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+        html.i18n-pending body { visibility: hidden; }
+
+        .nbu-photo { display: block; width: 100%; height: clamp(190px, 29vw, 390px); object-fit: cover; object-position: center 47%; }
+        main { max-width: 1200px; width: 100%; margin: 0 auto; padding: 0 2rem 4rem; }
+        .hero {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            margin-top: 2rem;
+            padding: clamp(2rem, 5vw, 4rem);
+            background: linear-gradient(125deg, #00873E 0%, #00873E 58%, #006F34 100%);
+            color: var(--white);
+        }
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: -38%;
+            right: -7%;
+            z-index: -1;
+            width: clamp(260px, 38vw, 520px);
+            aspect-ratio: 1;
+            border: 1px solid rgba(255, 255, 255, .22);
+            box-shadow: 0 0 0 28px rgba(255, 255, 255, .045), 0 0 0 56px rgba(255, 255, 255, .035);
+            transform: rotate(18deg);
+            animation: hero-orbit 16s ease-in-out infinite alternate;
+        }
+        .hero::after {
+            content: "";
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            width: 48%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .7));
+            transform-origin: right;
+            animation: hero-line 1.2s cubic-bezier(.2, .8, .2, 1) both;
+        }
+        .hero > * {
+            position: relative;
+            z-index: 1;
+        }
+        .hero .eyebrow {
+            animation: hero-rise .65s ease-out both;
+        }
+        .hero h1 {
+            animation: hero-rise .75s .1s ease-out both;
+        }
+        .hero > p {
+            animation: hero-rise .75s .2s ease-out both;
+        }
+        .hero-meta {
+            animation: hero-rise .75s .3s ease-out both;
+        }
+        .hero-meta span {
+            transition: color .2s ease, transform .2s ease;
+        }
+        .hero-meta span:hover {
+            color: #C8F2D5;
+            transform: translateX(4px);
+        }
+        @keyframes hero-rise {
+            from { opacity: 0; transform: translateY(18px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes hero-line {
+            from { transform: scaleX(0); opacity: 0; }
+            to { transform: scaleX(1); opacity: 1; }
+        }
+        @keyframes hero-orbit {
+            from { transform: translate(0, 0) rotate(18deg); }
+            to { transform: translate(-18px, 14px) rotate(25deg); }
+        }
+        .eyebrow { display: inline-block; margin-bottom: 1rem; padding: .25rem .55rem; border: 1px solid currentColor; font-size: .75rem; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+        h1 { max-width: 880px; font-size: clamp(2rem, 5vw, 4rem); line-height: 1.06; letter-spacing: -.045em; }
+        .hero p { max-width: 760px; margin-top: 1.25rem; font-size: clamp(1rem, 1.6vw, 1.2rem); }
+        .hero-meta { display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; margin-top: 1.75rem; font-size: .88rem; font-weight: 700; }
+        .hero-meta span::before { content: "■"; margin-right: .5rem; font-size: .7rem; }
+
+        .intro { padding: 3rem 0 1rem; }
+        .intro p { max-width: 850px; color: var(--muted); font-size: 1.08rem; }
+        .section { padding: 3.5rem 0; border-top: 1px solid var(--gray); scroll-margin-top: 86px; }
+        .section-heading { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, .65fr); gap: 2rem; align-items: end; margin-bottom: 1.75rem; }
+        .section-number { color: var(--green); font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+        h2 { margin-top: .3rem; font-size: clamp(1.65rem, 3vw, 2.5rem); line-height: 1.12; letter-spacing: -.035em; }
+        h3 { font-size: 1.1rem; line-height: 1.3; }
+        .section-heading > p { color: var(--muted); }
+        .takeaways { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0 3rem; }
+        .takeaway { padding: 1.25rem; border: 1px solid var(--gray); border-top: 4px solid var(--green); background: var(--white); }
+        .takeaway strong { display: block; margin-bottom: .35rem; font-size: 1.05rem; }
+        .takeaway p { color: var(--muted); font-size: .93rem; }
+
+        .chart-card { padding: clamp(1rem, 3vw, 1.75rem); background: var(--surface); border: 1px solid var(--gray); }
+        .chart-title { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: .5rem 1rem; margin-bottom: .85rem; }
+        .chart-title h3 {
+            flex: 1 1 360px;
+            min-width: 0;
+        }
+        .chart-title small {
+            flex: 1 1 260px;
+            min-width: 0;
+            max-width: 100%;
+            overflow-wrap: anywhere;
+            text-align: right;
+        }
+        .chart-title small, .chart-note { color: var(--muted); font-size: .82rem; }
+        .irf-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+        .mini-chart { min-width: 0; padding: .9rem; background: var(--white); border: 1px solid var(--gray); }
+        .mini-chart h3 { margin-bottom: .2rem; font-size: .98rem; }
+        .mini-chart p { color: var(--muted); font-size: .82rem; }
+        .mini-chart svg { display: block; width: 100%; height: 145px; margin-top: .35rem; }
+        .axis { stroke: #ADB5AF; stroke-width: 1; }
+        .gridline { stroke: #E5E9E6; stroke-width: 1; }
+        .curve { fill: none; stroke: var(--green); stroke-width: 3; vector-effect: non-scaling-stroke; }
+        .curve-dark { fill: none; stroke: var(--black); stroke-width: 2.5; vector-effect: non-scaling-stroke; }
+        .curve-dash { fill: none; stroke: var(--green-dark); stroke-width: 2.5; stroke-dasharray: 6 4; vector-effect: non-scaling-stroke; }
+        .svg-label { fill: #59615B; font: 11px Arial, sans-serif; }
+        .legend { display: flex; flex-wrap: wrap; gap: .6rem 1.2rem; margin-top: .8rem; color: var(--muted); font-size: .82rem; }
+        .legend span::before { content: ""; display: inline-block; width: 18px; height: 3px; margin: 0 .4rem .2rem 0; background: var(--green); }
+        .legend .legend-black::before { background: var(--black); }
+
+        .cred-layout { display: grid; grid-template-columns: 1fr .8fr; gap: 1rem; align-items: stretch; }
+        .scenario-panel { padding: 1.4rem; background: var(--white); border: 1px solid var(--gray); }
+        .scenario-controls { display: flex; gap: .5rem; flex-wrap: wrap; margin: 1rem 0; }
+        .scenario-btn { padding: .65rem .9rem; border: 1px solid var(--gray); background: var(--white); color: var(--black); cursor: pointer; font-weight: 700; }
+        .scenario-btn[aria-pressed="true"] { border-color: var(--black); background: var(--black); color: var(--white); }
+        .scenario-copy { min-height: 100px; color: var(--muted); }
+        .scenario-copy strong { color: var(--black); }
+        .trust-visual { display: grid; gap: .8rem; align-content: center; }
+        .trust-row { padding: 1rem; background: var(--white); border-left: 4px solid var(--green); }
+        .trust-row.low { border-color: var(--black); }
+        .trust-row strong { display: block; }
+        .trust-row p { color: var(--muted); font-size: .9rem; }
+        .response-meter { height: 9px; margin-top: .65rem; background: var(--gray); }
+        .response-meter span { display: block; height: 100%; background: var(--green); transition: width .25s; }
+        [data-scenario="low"] .response-meter span { width: 90%; }
+        [data-scenario="high"] .response-meter span { width: 55%; }
+        [data-scenario="full"] .response-meter span { width: 24%; }
+        .cred-chart .low-line, .cred-chart .full-line { transition: opacity .2s; }
+        .cred-chart[data-scenario="low"] .low-line { opacity: 1; }
+        .cred-chart[data-scenario="low"] .full-line { opacity: .15; }
+        .cred-chart[data-scenario="high"] .low-line { opacity: .55; }
+        .cred-chart[data-scenario="high"] .full-line { opacity: .55; }
+        .cred-chart[data-scenario="full"] .low-line { opacity: .15; }
+        .cred-chart[data-scenario="full"] .full-line { opacity: 1; }
+
+        .flow { display: grid; grid-template-columns: repeat(4, 1fr); gap: .55rem; margin: 1rem 0 1.25rem; }
+        .flow-step { position: relative; padding: 1rem .85rem; min-height: 108px; background: var(--surface); border: 0; }
+        .flow-step:not(:last-child)::after { content: "→"; position: absolute; top: 38%; right: -.55rem; z-index: 1; color: var(--green); font-weight: 900; }
+        .flow-step b { display: block; margin-bottom: .4rem; color: var(--green-dark); }
+        .flow-step small { color: var(--muted); }
+        .rate-matrix { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .rate-column { padding: 1.25rem; background: var(--white); border: 0; }
+        .rate-column h3 { padding-bottom: .65rem; border-bottom: 1px solid var(--gray); }
+        .rate-item { display: grid; grid-template-columns: minmax(125px, 1fr) 1.2fr; gap: .75rem; align-items: center; margin-top: .9rem; font-size: .88rem; }
+        .rate-track { display: block; width: 100%; height: 10px; background: var(--surface); }
+        .rate-track i { display: block; height: 100%; background: var(--green); }
+        .rate-track i.slow { background: #8D9B91; }
+        .speed-label { color: var(--muted); font-size: .78rem; }
+
+        .erpt-layout { display: grid; grid-template-columns: .9fr 1.1fr; gap: 1rem; }
+        .erpt-bars { display: grid; gap: 1rem; align-content: center; padding: 1.4rem; background: var(--white); border: 1px solid var(--gray); }
+        .bar-row { display: grid; grid-template-columns: 155px 1fr 48px; gap: .7rem; align-items: center; font-size: .86rem; }
+        .bar-track { height: 18px; background: var(--surface); }
+        .bar-track span { display: block; height: 100%; background: var(--green); }
+        .bar-row:nth-child(3) .bar-track span { background: #78A98A; }
+        .bar-row:nth-child(4) .bar-track span { background: var(--green-dark); }
+        .erpt-summary { padding: 1.4rem; background: var(--black); color: var(--white); }
+        .erpt-summary p { margin-top: .7rem; color: #E4E8E5; }
+        .erpt-summary strong { color: #A8E0BC; }
+        .erpt-callout { margin-top: 1rem; padding: .8rem; border: 1px solid #68716B; font-size: .9rem; }
+
+        .expect-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 1rem; }
+        .expect-chart { padding: 1.25rem; background: var(--surface); border: 1px solid var(--gray); }
+        .expect-chart svg { display: block; width: 100%; height: 245px; }
+        .expect-path { fill: none; stroke-width: 3; vector-effect: non-scaling-stroke; }
+        .expect-households { stroke: #8C6B37; }
+        .expect-business { stroke: var(--green); }
+        .expect-analysts { stroke: var(--black); stroke-dasharray: 7 4; }
+        .guidance { padding: 1.4rem; background: var(--white); border: 0; }
+        .guidance-step { display: grid; grid-template-columns: 75px 1fr; gap: .8rem; padding: .85rem 0; border-bottom: 0; }
+        .guidance-step:last-child { border-bottom: 0; }
+        .guidance-step b { color: var(--green-dark); }
+        .guidance p { color: var(--muted); }
+
+        .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 1.5rem; border-top: 2px solid var(--green); }
+        .timeline article { position: relative; padding: 1.2rem 1rem 0 0; }
+        .timeline article::before { content: ""; position: absolute; top: -7px; left: 0; width: 12px; height: 12px; background: var(--green); }
+        .timeline b { color: var(--green-dark); }
+        .timeline p { margin-top: .35rem; color: var(--muted); font-size: .9rem; }
+        .recommendations { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        .recommendation { padding: 1.25rem; background: var(--surface); border-left: 4px solid var(--green); }
+        .recommendation p { margin-top: .35rem; color: var(--muted); }
+        .source-note { margin-top: 1rem; color: var(--muted); font-size: .82rem; }
+
+        /* Планшет: графіки мають достатньо ширини, щоб криві не стискалися й не обрізалися. */
+        @media (min-width: 761px) and (max-width: 980px) {
+            main { padding-left: 1.25rem; padding-right: 1.25rem; }
+            .irf-grid { grid-template-columns: 1fr; }
+            .mini-chart { padding: 1.15rem 1.25rem; }
+            .mini-chart svg {
+                width: 100%;
+                height: 145px;
+                min-height: 0;
+                aspect-ratio: auto;
+                overflow: visible;
+            }
+        }
+
+        /* Линии графиков не должны обрываться из-за границ адаптивных контейнеров. */
+        .chart-card,
+        .mini-chart,
+        .cred-chart,
+        .erpt-bars,
+        .expect-chart,
+        .mini-chart svg,
+        .cred-chart svg,
+        .expect-chart svg {
+            overflow: visible;
+        }
+
+        @media (max-width: 760px) {
+            .chart-title { align-items: flex-start; }
+            .chart-title small {
+                flex-basis: 100%;
+                text-align: left;
+            }
+        }
+
+        @media (min-width: 761px) and (max-width: 1120px) {
+            header { flex-wrap: wrap; }
+            header nav { order: 3; width: 100%; overflow-x: auto; }
+        }
+
+        @media (max-width: 760px) {
+            header { position: relative; flex-wrap: wrap; padding: .9rem 1rem; }
+            .language-switch button { min-width: 48px; min-height: 44px; }
+            .chart-card { min-width: 0; overflow: visible; }
+            .mini-chart { min-width: 0; overflow: visible; }
+            .mini-chart svg { max-width: 100%; overflow: visible; }
+
+            nav { width: 100%; overflow-x: auto; }
+            nav a { white-space: nowrap; padding-left: .2rem; padding-right: .6rem; }
+            main { padding: 0 1rem 3rem; }
+            .section-heading, .cred-layout, .erpt-layout, .expect-grid { grid-template-columns: 1fr; gap: .8rem; }
+            .takeaways { grid-template-columns: 1fr; }
+            .timeline {
+                grid-template-columns: 1fr;
+                margin-left: .35rem;
+                padding-left: 1.25rem;
+                border-top: 0;
+                border-left: 2px solid var(--green);
+            }
+            .timeline article {
+                padding: 0 0 1.35rem;
+            }
+            .timeline article:last-child {
+                padding-bottom: 0;
+            }
+            .timeline article::before {
+                top: .25rem;
+                left: -1.68rem;
+            }
+            .flow { grid-template-columns: repeat(2, 1fr); }
+            .flow-step:nth-child(2)::after { display: none; }
+            .rate-matrix { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .irf-grid, .recommendations { grid-template-columns: 1fr; }
+            .mini-chart svg { height: 125px; }
+            .bar-row { grid-template-columns: 120px 1fr 42px; gap: .45rem; font-size: .78rem; }
+            .timeline {
+                grid-template-columns: 1fr;
+                margin-left: .35rem;
+                padding-left: 1.25rem;
+                border-top: 0;
+                border-left: 2px solid var(--green);
+            }
+            .timeline article {
+                padding: 0 0 1.35rem;
+            }
+            .timeline article:last-child {
+                padding-bottom: 0;
+            }
+            .timeline article::before {
+                top: .25rem;
+                left: -1.68rem;
+            }
+            .flow { grid-template-columns: 1fr; }
+            .flow-step:not(:last-child)::after { content: "↓"; top: auto; right: 50%; bottom: -.8rem; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+        }
+
+        .reading-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 20;
+            width: 0;
+            height: 4px;
+            background: var(--green);
+            transition: width .12s linear;
+        }
+        .takeaway, .timeline article, .recommendation {
+            cursor: pointer;
+        }
+        .takeaway.is-selected, .recommendation.is-selected {
+            background: #E7F3EA;
+            outline: 2px solid var(--green);
+            outline-offset: -2px;
+        }
+        .timeline article {
+            transition: background-color .2s ease, padding .2s ease;
+        }
+        .timeline article:hover, .timeline article:focus-visible, .timeline article.is-selected {
+            background: var(--surface);
+        }
+        .timeline article:focus-visible {
+            outline: 2px solid var(--green);
+            outline-offset: 4px;
+        }
+
+        /* Open, lightweight presentation; footer and banknote artwork remain untouched. */
+        .takeaway, .chart-card, .mini-chart, .scenario-panel, .flow-step, .rate-column,
+        .erpt-bars, .expect-chart, .guidance, .recommendation {
+            border: 0;
+            transition: background-color .22s ease, color .22s ease, transform .22s ease;
+        }
+        .takeaway { padding: 1.2rem 1rem; border-top: 2px solid var(--green); background: transparent; }
+        .chart-card, .expect-chart { background: var(--surface); }
+        .mini-chart, .scenario-panel, .rate-column, .erpt-bars, .guidance { background: var(--white); }
+        .flow-step, .recommendation { background: var(--surface); }
+        .erpt-summary {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            background: linear-gradient(135deg, #171D19, #0D110F);
+            color: var(--white);
+            border-left: 4px solid var(--green);
+        }
+        .erpt-summary::after {
+            content: "";
+            position: absolute;
+            z-index: -1;
+            top: -105px;
+            right: -85px;
+            width: 230px;
+            aspect-ratio: 1;
+            border: 1px solid rgba(168, 224, 188, .18);
+            box-shadow: 0 0 0 22px rgba(168, 224, 188, .035), 0 0 0 44px rgba(168, 224, 188, .025);
+            transform: rotate(25deg);
+            pointer-events: none;
+        }
+        .erpt-summary > * { position: relative; z-index: 1; }
+        .erpt-summary .eyebrow { color: #A8E0BC; border-color: rgba(168, 224, 188, .55); }
+        .erpt-summary h3 { max-width: 360px; font-size: clamp(1.2rem, 2vw, 1.55rem); }
+        .erpt-summary p { color: #D5DDD7; }
+        .erpt-summary strong { color: #A8E0BC; }
+        .erpt-callout {
+            margin-top: 1.15rem;
+            padding: .9rem 1rem;
+            border: 0;
+            border-top: 1px solid rgba(255, 255, 255, .2);
+            background: rgba(255, 255, 255, .045);
+            color: #F2F5F3;
+        }
+        .erpt-callout strong { color: #A8E0BC; }
+        .takeaway:hover strong, .flow-step:hover b, .recommendation:hover strong { color: var(--green-dark); }
+        .mini-chart svg path, .expect-chart svg path { transition: stroke .2s ease, stroke-width .2s ease, opacity .2s ease; }
+        .mini-chart:hover .curve, .mini-chart:hover .curve-dark, .mini-chart:hover .curve-dash,
+        .expect-chart:hover .expect-path { stroke-width: 4; }
+        .rate-track, .bar-track { overflow: hidden; }
+        .rate-track i, .bar-track span { transform: scaleX(1); transform-origin: left; transition: transform .9s cubic-bezier(.2,.7,.2,1); }
+        .motion-ready .rate-track i, .motion-ready .bar-track span { transform: scaleX(0); }
+        .motion-ready .is-visible .rate-track i, .motion-ready .is-visible .bar-track span { transform: scaleX(1); }
+        .reveal-item { transition: opacity .65s ease, transform .65s ease; }
+        .motion-ready .reveal-item { opacity: 0; transform: translateY(16px); }
+        .motion-ready .reveal-item.is-visible { opacity: 1; transform: translateY(0); }
+        button, nav a { transition: background-color .18s ease, color .18s ease, border-color .18s ease, transform .15s ease; }
+        button:active { transform: translateY(1px); }
+        nav a:hover { background: var(--white); }
+        nav a[aria-current="location"] { color: var(--green-dark); border-color: var(--green); }
+        .back-to-top {
+            position: fixed; right: max(1rem, env(safe-area-inset-right)); bottom: max(1rem, env(safe-area-inset-bottom)); z-index: 10;
+            display: grid; place-items: center; width: 50px; height: 50px; border: 1px solid var(--green-dark);
+            border-radius: 50% !important; background: var(--green); color: var(--white); cursor: pointer;
+            font-size: 1.45rem; font-weight: 800; line-height: 1;
+            opacity: 0; visibility: hidden; transform: translateY(8px); transition: opacity .2s ease, visibility .2s ease, transform .2s ease, background-color .2s ease, color .2s ease;
+        }
+        .back-to-top.is-visible { opacity: 1; visibility: visible; transform: translateY(0); }
+        .back-to-top:hover, .back-to-top:focus-visible { background: var(--green-dark); color: var(--white); }
+        .back-to-top:focus-visible { outline: 2px solid var(--black); outline-offset: 3px; }
+        .update-notice {
+            position: fixed;
+            right: max(1rem, env(safe-area-inset-right));
+            bottom: max(5.5rem, calc(env(safe-area-inset-bottom) + 5rem));
+            z-index: 15;
+            display: flex;
+            width: min(420px, calc(100vw - 2rem));
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem;
+            background: #111;
+            color: #fff;
+            box-shadow: 0 8px 28px rgba(0, 0, 0, .2);
+        }
+        .update-notice[hidden] { display: none; }
+        .update-notice p { font-size: .9rem; }
+        .update-notice button {
+            flex: 0 0 auto;
+            padding: .55rem .75rem;
+            border: 1px solid #A8E0BC;
+            background: #A8E0BC;
+            color: #111;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .update-notice button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+        /* Чисті графіки без залитих геометричних фігур і важких рамок. */
+        .chart-card, .mini-chart, .erpt-bars, .expect-chart {
+            border: 0;
+            box-shadow: none;
+        }
+        .chart-card { padding: clamp(1.15rem, 3vw, 2rem); background: var(--surface); }
+        .chart-title { align-items: flex-start; margin-bottom: 1.15rem; }
+        .chart-title h3 { font-size: 1.08rem; letter-spacing: -.015em; }
+        .chart-title small { padding: .2rem .55rem; background: transparent; font-size: .72rem; font-weight: 700; }
+        .irf-grid { gap: .85rem; }
+        .mini-chart {
+            padding: 1rem;
+            background: var(--white);
+            box-shadow: none;
+        }
+        .mini-chart h3 { font-size: 1rem; }
+        .mini-chart p { min-height: 1.3em; }
+        .mini-chart svg, .cred-chart svg, .expect-chart svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            margin-top: .55rem;
+        }
+        .mini-chart svg { aspect-ratio: 300 / 145; }
+        .cred-chart svg { aspect-ratio: 420 / 200; }
+        .expect-chart svg { aspect-ratio: 520 / 260; }
+        .mini-chart svg path, .cred-chart svg path, .expect-chart svg path { fill: none; }
+        .gridline { stroke: #DDE5DF; stroke-width: 1; stroke-dasharray: 3 5; }
+        .axis { stroke: #87948B; stroke-width: 1.25; }
+        .svg-label { fill: #58645C; font-size: 10px; }
+        .curve, .curve-dark, .curve-dash, .expect-path {
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .curve { stroke: #00873E; stroke-width: 3.5; }
+        .curve-dark { stroke: #111111; stroke-width: 3; }
+        .curve-dash { stroke: #548361; stroke-width: 3; stroke-dasharray: 7 5; }
+        .chart-point { fill: #FFFFFF; stroke: var(--green); stroke-width: 3; vector-effect: non-scaling-stroke; }
+        .cred-chart { padding: 1rem; background: var(--white); }
+        .cred-chart .curve { stroke: #00873E; }
+        .cred-chart .curve-dark { stroke: #202823; }
+        .legend { gap: .55rem 1rem; font-size: .78rem; }
+        .legend span::before { height: 3px; vertical-align: middle; }
+        .expect-chart { padding: clamp(1rem, 2.5vw, 1.5rem); background: var(--surface); }
+        .expect-path { stroke-width: 3.5; }
+        .expect-households { stroke: #9A7132; }
+        .expect-business { stroke: #00873E; }
+        .expect-analysts { stroke: #202823; }
+        .expect-chart .legend span:nth-child(1)::before { background: #9A7132; }
+        .expect-chart .legend span:nth-child(2)::before { background: #00873E; }
+        .expect-chart .legend span:nth-child(3)::before { background: #202823; }
+        .rate-track, .bar-track { height: 12px; background: #E8EEE9; }
+        .rate-track i { background: #00873E; }
+        .rate-track i.slow { background: #87968B; }
+        .bar-row:nth-child(2) .bar-track span { background: #005F2B; }
+        .bar-row:nth-child(3) .bar-track span { background: #00873E; }
+        .bar-row:nth-child(4) .bar-track span { background: #87A993; }
+        .bar-row:nth-child(5) .bar-track span { background: #548361; }
+        .bar-row:nth-child(6) .bar-track span { background: #111111; }
+        .bar-row strong { font-variant-numeric: tabular-nums; }
+        @media (max-width: 480px) {
+            .mini-chart svg { height: auto; }
+            .chart-title { gap: .4rem; }
+            .chart-title small { white-space: normal; }
+        }
+
+        /* Оформлення футера та ілюстрації купюр збережено без змін. */
+        footer {
+            --footer-extension: 80px;
+            position: relative;
+            height: calc(clamp(440px, 50vh, 560px) + var(--footer-extension));
+            background: var(--white);
+            overflow-x: clip;
+        }
+
+        .money-art {
+            position: absolute;
+            top: auto;
+            right: 0;
+            bottom: calc(-1 * var(--footer-extension));
+            width: max(140vw, 1800px);
+            height: auto;
+            overflow: visible;
+        }
+
+        footer::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: calc(100% + var(--footer-extension));
+            background: rgba(0, 0, 0, 0.80);
+            z-index: 1;
+            pointer-events: none;
+        }
+        .footer-source {
+            position: absolute;
+            z-index: 2;
+            bottom: calc(1.25rem - 45px);
+            left: max(1rem, calc((100vw - 1200px) / 2));
+            right: 1rem;
+            color: #E4E8E5;
+            font-size: .9rem;
+        }
+        .footer-source a {
+            display: inline-block;
+            padding: .5rem 0;
+            color: inherit;
+            text-decoration: underline;
+            text-decoration-color: transparent;
+            text-underline-offset: .25em;
+            transition: color .18s ease, text-decoration-color .25s ease;
+        }
+        .footer-source a:hover, .footer-source a:focus-visible {
+            color: #A8E0BC;
+            text-decoration-color: currentColor;
+        }
+        .footer-source a:focus-visible { outline: 2px solid #A8E0BC; outline-offset: 3px; }
+
+        /* Hero выходит к краям страницы, а правый край меняется вместе с шириной экрана. */
+        .hero {
+            width: calc(100vw - clamp(1rem, 5vw, 4rem));
+            max-width: none;
+            margin-left: calc(50% - 50vw);
+            margin-right: 0;
+            padding-left: max(2rem, calc((100vw - 1200px) / 2 + 2rem));
+            padding-right: max(2rem, calc((100vw - 1200px) / 2 + 2rem));
+        }
+
+        @media (max-width: 760px) {
+            .hero {
+                width: calc(100vw - 1rem);
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+        }
+
+        /* Финальная настройка начальных графиков для планшетів.
+           Правило розташоване після загальних стилів SVG, щоб вони його не перекривали. */
+        @media (min-width: 761px) and (max-width: 980px) {
+            .irf-grid { grid-template-columns: 1fr; }
+            .mini-chart { width: 100%; }
+            .mini-chart svg {
+                width: 100%;
+                height: 145px !important;
+                min-height: 145px;
+                aspect-ratio: auto !important;
+                overflow: visible;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="reading-progress" aria-hidden="true"></div>
+    <aside class="update-notice" id="update-notice" role="status" aria-live="polite" hidden>
+        <p>Доступна нова версія сайту.</p>
+        <button type="button" id="update-apply">Оновити</button>
+    </aside>
+    <header>
+        <div class="brand"><img class="brand-mark" src="https://res.cloudinary.com/jb0nkyvj/image/upload/f_auto,q_auto/1000015593" alt="" aria-hidden="true" width="42" height="42"><span class="brand-divider" aria-hidden="true"></span><span>МОНЕТАРНА ПОЛІТИКА</span></div>
+        <nav aria-label="Навігація сторінкою">
+            <a href="#overview">Огляд</a>
+            <a href="#qpm">Шок ставки</a>
+            <a href="#credibility">Довіра</a>
+            <a href="#channels">Канали</a>
+            <a href="#erpt">Валютний канал</a>
+            <a href="#expectations">Очікування</a>
+            <a href="#context">Контекст</a>
+        </nav>
+        <div class="language-switch" role="group" aria-label="Мова сторінки" data-i18n-aria="language.group">
+            <button type="button" lang="uk" aria-pressed="true" aria-label="Українська мова" data-language="uk">UA</button>
+            <button type="button" lang="en" aria-pressed="false" aria-label="English language" data-language="en">EN</button>
+        </div>
+    </header>
+
+    <img class="nbu-photo" src="https://trkmart.tv/wp-content/uploads/2020/10/imgonline-com-ua-Resize-df3hnAVNMwN.jpg" alt="Будівля Національного банку України" width="1920" height="650" fetchpriority="high" decoding="async">
+
+    <main id="top">
+        <section class="hero" aria-labelledby="page-title">
+            <span class="eyebrow">Дослідження НБУ · 2015–2021</span>
+            <h1 id="page-title">Чи стримує облікова ставка інфляцію?</h1>
+            <p>Як рішення Національного банку передаються до цін, валютного курсу, кредитів, депозитів та очікувань — і чому довіра до політики має значення.</p>
+            <div class="hero-meta"><span>Інфляційне таргетування</span><span>Мала відкрита економіка</span><span>Період між двома вторгненнями</span></div>
+        </section>
+
+        <section class="intro" id="overview">
+            <p>У 2015–2021 роках короткострокова ставка стала основним інструментом монетарної політики України. Дослідження показує: <strong>підвищення ставки зрештою знижує інфляцію</strong>, але ефект проходить через кілька каналів і проявляється з часовими лагами. Його сила залежить від довіри, стану фінансової системи та валютного курсу.</p>
+        </section>
+
+        <div class="takeaways" aria-label="Головні висновки">
+            <article class="takeaway"><strong>Ставка впливає на інфляцію</strong><p>Жорсткіша політика охолоджує попит, підтримує гривню та з часом стримує зростання цін.</p></article>
+            <article class="takeaway"><strong>Канали працюють неоднаково</strong><p>Овернайт-ставка реагує швидко; передача до роздрібних ставок повільніша й неповна.</p></article>
+            <article class="takeaway"><strong>Довіра посилює результат</strong><p>Добре закріплені очікування зменшують інфляційну реакцію та потребу в різкому підвищенні ставки.</p></article>
+        </div>
+
+        <section class="section" id="qpm">
+            <div class="section-heading"><div><span class="section-number">01 / Передача політичного рішення</span><h2>Що відбувається після підвищення ставки?</h2></div><p>Напівструктурні QPM-моделі показують послідовність реакцій. Схеми нижче передають напрям і приблизний час реакції, а не фактичні числові оцінки.</p></div>
+            <div class="chart-card">
+                <div class="chart-title"><h3>Імпульсна реакція на жорсткий монетарний шок</h3><small>Схематична ілюстрація · квартали після шоку</small></div>
+                <div class="irf-grid">
+                    <article class="mini-chart"><h3>Річна інфляція</h3><p>Знижується поступово</p><svg viewBox="0 0 300 145" role="img" aria-label="Схематичне зниження інфляції після підвищення ставки"><path class="gridline" d="M34 35H288 M34 75H288 M34 115H288"/><path class="axis" d="M34 12V120H288"/><path class="curve" d="M38 69 C65 70 72 85 100 96 S152 109 183 105 S229 91 284 82"/><circle class="chart-point" cx="183" cy="105" r="4"/><text class="svg-label" x="35" y="139">0</text><text class="svg-label" x="145" y="139">4</text><text class="svg-label" x="273" y="139">8 кв.</text><text class="svg-label" x="4" y="18">↑</text></svg></article>
+                    <article class="mini-chart"><h3>Облікова ставка</h3><p>Стрибок із подальшим поверненням</p><svg viewBox="0 0 300 145" role="img" aria-label="Схематичне коротке підвищення облікової ставки"><path class="gridline" d="M34 35H288 M34 75H288 M34 115H288"/><path class="axis" d="M34 12V120H288"/><path class="curve-dark" d="M38 91 L66 42 C78 31 91 47 110 59 S157 78 191 83 S244 88 284 90"/><circle class="chart-point" cx="66" cy="42" r="4"/><text class="svg-label" x="35" y="139">0</text><text class="svg-label" x="145" y="139">4</text><text class="svg-label" x="273" y="139">8 кв.</text><text class="svg-label" x="4" y="18">↑</text></svg></article>
+                    <article class="mini-chart"><h3>Номінальний курс</h3><p>Гривня спершу зміцнюється</p><svg viewBox="0 0 300 145" role="img" aria-label="Схематичне тимчасове зміцнення гривні після підвищення ставки"><path class="gridline" d="M34 35H288 M34 75H288 M34 115H288"/><path class="axis" d="M34 12V120H288"/><path class="curve" d="M38 64 C65 65 76 103 111 108 S158 94 187 83 S237 73 284 70"/><circle class="chart-point" cx="111" cy="108" r="4"/><text class="svg-label" x="35" y="139">0</text><text class="svg-label" x="145" y="139">4</text><text class="svg-label" x="273" y="139">8 кв.</text><text class="svg-label" x="4" y="18">↑</text></svg></article>
+                    <article class="mini-chart"><h3>Розрив випуску</h3><p>Активність тимчасово слабшає</p><svg viewBox="0 0 300 145" role="img" aria-label="Схематичне короткострокове зниження розриву випуску"><path class="gridline" d="M34 35H288 M34 75H288 M34 115H288"/><path class="axis" d="M34 12V120H288"/><path class="curve-dash" d="M38 60 C65 61 80 82 108 99 S150 110 179 102 S229 83 284 77"/><circle class="chart-point" cx="150" cy="110" r="4"/><text class="svg-label" x="35" y="139">0</text><text class="svg-label" x="145" y="139">4</text><text class="svg-label" x="273" y="139">8 кв.</text><text class="svg-label" x="4" y="18">↑</text></svg></article>
+                </div>
+                <p class="chart-note" style="margin-top:1rem">Умовна форма кривих узагальнює напрямки, описані в матеріалах дослідження. Для курсу зниження на схемі означає зміцнення гривні; конкретна реакція залежить від моделі та шоку.</p>
+            </div>
+        </section>
+
+        <section class="section" id="credibility">
+            <div class="section-heading"><div><span class="section-number">02 / Довіра до політики</span><h2>Однаковий шок — різна ціна для економіки</h2></div><p>Коли суспільство довіряє цілі НБУ, очікування краще закріплені. За низької довіри інфляційний шок вимагає сильнішої реакції ставки.</p></div>
+            <div class="cred-layout" data-scenario="low" id="cred-panel">
+                <div class="scenario-panel">
+                    <h3>Оберіть сценарій довіри</h3>
+                    <div class="scenario-controls" role="group" aria-label="Рівень довіри до монетарної політики">
+                        <button class="scenario-btn" type="button" data-mode="low" aria-pressed="true">Низька</button>
+                        <button class="scenario-btn" type="button" data-mode="high" aria-pressed="false">Середня</button>
+                        <button class="scenario-btn" type="button" data-mode="full" aria-pressed="false">Повна</button>
+                    </div>
+                    <p class="scenario-copy" id="scenario-copy" aria-live="polite"><strong>Низька довіра:</strong> очікування зростають вище й довше залишаються підвищеними. Щоб приборкати інфляцію, НБУ доводиться піднімати ставку агресивніше; спад випуску може бути глибшим.</p>
+                    <div class="chart-card cred-chart" id="cred-chart" data-scenario="low">
+                        <div class="chart-title"><h3>Очікувана інфляційна реакція</h3><small>Якісна схема шоку пропозиції</small></div>
+                        <svg viewBox="0 0 420 200" role="img" aria-label="За низької довіри інфляційна реакція вища і триваліша"><path class="gridline" d="M42 45H400 M42 90H400 M42 135H400"/><path class="axis" d="M42 18V155H400"/><path class="curve low-line" d="M47 132 C75 119 85 51 127 37 S195 65 227 87 S294 111 395 126"/><path class="curve-dark full-line" d="M47 132 C75 121 91 94 126 84 S181 95 217 112 S295 128 395 133"/><text class="svg-label" x="43" y="177">шок</text><text class="svg-label" x="174" y="177">час</text><text class="svg-label" x="365" y="177">повернення</text></svg>
+                        <div class="legend"><span>Низька довіра</span><span class="legend-black">Повна довіра</span></div>
+                    </div>
+                </div>
+                <aside class="trust-visual" aria-label="Порівняння реакцій">
+                    <div class="trust-row low"><strong>Ставка та випуск</strong><p>Слабша довіра — жорсткіше підвищення ставки й глибше короткострокове охолодження.</p><div class="response-meter"><span></span></div></div>
+                    <div class="trust-row"><strong>Очікування</strong><p>За повної довіри вплив шоку на інфляційні очікування менший і швидше згасає.</p><div class="response-meter"><span></span></div></div>
+                    <p class="chart-note">Схематичне порівняння; смуги позначають відносну силу реакції, а не оцінені відсоткові значення.</p>
+                </aside>
+            </div>
+        </section>
+
+        <section class="section" id="channels">
+            <div class="section-heading"><div><span class="section-number">03 / Процентний канал</span><h2>Від облікової ставки — до ставок банків</h2></div><p>Операційна передача до міжбанківського ринку стала виразнішою після запровадження інфляційного таргетування. У роздрібному сегменті швидкість залежить від позичальника та типу банку.</p></div>
+            <div class="chart-card">
+                <div class="chart-title"><h3>Як передається зміна ставки</h3><small>Швидкість і повнота — якісне узагальнення</small></div>
+                <div class="flow" aria-label="Послідовність процентного каналу">
+                    <div class="flow-step"><b>Рішення НБУ</b><small>Облікова ставка задає короткостроковий сигнал політики.</small></div>
+                    <div class="flow-step"><b>Міжбанк</b><small>Овернайт-ставка швидко зблизилася з обліковою.</small></div>
+                    <div class="flow-step"><b>Банківські ставки</b><small>Депозити й кредити реагують із різними лагами.</small></div>
+                    <div class="flow-step"><b>Попит та інфляція</b><small>Зміна вартості фінансування впливає на рішення економічних агентів.</small></div>
+                </div>
+                <div class="rate-matrix">
+                    <article class="rate-column"><h3>Передача до ринку</h3>
+                        <div class="rate-item"><span>Овернайт на міжбанку</span><span><span class="rate-track"><i style="width:94%"></i></span><small class="speed-label"> швидко · майже повно</small></span></div>
+                        <div class="rate-item"><span>Дохідність ОВДП</span><span><span class="rate-track"><i style="width:78%"></i></span><small class="speed-label"> помітна реакція</small></span></div>
+                        <div class="rate-item"><span>Депозити населення</span><span><span class="rate-track"><i class="slow" style="width:48%"></i></span><small class="speed-label"> повільніше · неповно</small></span></div>
+                        <div class="rate-item"><span>Кредити бізнесу</span><span><span class="rate-track"><i style="width:66%"></i></span><small class="speed-label"> залежить від сегмента</small></span></div>
+                    </article>
+                    <article class="rate-column"><h3>Хто реагує швидше?</h3>
+                        <div class="rate-item"><span>Великі підприємства</span><span><span class="rate-track"><i style="width:90%"></i></span><small class="speed-label"> швидше · повніша передача</small></span></div>
+                        <div class="rate-item"><span>Малі та мікропідприємства</span><span><span class="rate-track"><i class="slow" style="width:43%"></i></span><small class="speed-label"> повільніше · частково</small></span></div>
+                        <div class="rate-item"><span>Банки з іноземним капіталом</span><span><span class="rate-track"><i style="width:87%"></i></span><small class="speed-label"> швидша передача</small></span></div>
+                        <div class="rate-item"><span>Державні та приватні банки</span><span><span class="rate-track"><i class="slow" style="width:52%"></i></span><small class="speed-label"> повільніше / частково</small></span></div>
+                    </article>
+                </div>
+                <p class="chart-note" style="margin-top:1rem">Довжина смуг — візуальна якісна шкала, а не статистична оцінка. Трансмісія кредитних ставок була сильнішою для великих позичальників і в банках з іноземним капіталом; пандемія COVID-19 погіршила передачу до частини ринкових ставок.</p>
+            </div>
+        </section>
+
+        <section class="section" id="erpt">
+            <div class="section-heading"><div><span class="section-number">04 / Валютний канал</span><h2>Курс швидко доходить до споживчих цін</h2></div><p>Відкрита економіка України чутлива до валютного курсу. Ефект перенесення (ERPT) асиметричний: знецінення гривні впливає на ціни сильніше, ніж її зміцнення.</p></div>
+            <div class="erpt-layout">
+                <div class="erpt-bars" role="img" aria-label="Ілюстрація оцінок ефекту перенесення: загальний показник знизився з приблизно 0,6 до 0,3; зміцнення близько 0,1; помірне знецінення близько 0,2; екстремальне знецінення близько 0,55">
+                    <div class="chart-title"><h3>Ефект перенесення на ціни</h3><small>Орієнтовні оцінки з опису дослідження</small></div>
+                    <div class="bar-row"><span>Раніше / загалом</span><span class="bar-track"><span style="width:100%"></span></span><strong>~0,6</strong></div>
+                    <div class="bar-row"><span>Пізніше / загалом</span><span class="bar-track"><span style="width:50%"></span></span><strong>~0,3</strong></div>
+                    <div class="bar-row"><span>Зміцнення</span><span class="bar-track"><span style="width:17%"></span></span><strong>~0,1</strong></div>
+                    <div class="bar-row"><span>Помірне знецінення</span><span class="bar-track"><span style="width:33%"></span></span><strong>~0,2</strong></div>
+                    <div class="bar-row"><span>Екстремальне знецінення</span><span class="bar-track"><span style="width:92%"></span></span><strong>~0,55</strong></div>
+                    <p class="chart-note">Значення наведено як у вихідному описі; шкала смуг нормована до 0,6.</p>
+                </div>
+                <aside class="erpt-summary"><span class="eyebrow">КУРС І ЦІНИ · ERPT</span><h3>Знецінення впливає сильніше, ніж зміцнення</h3><p>Після валютної кризи та переходу до інфляційного таргетування загальний ефект перенесення знизився приблизно з <strong>0,6 до 0,3</strong> у ковзних оцінках.</p><p>Але різкі курсові рухи мають більший вплив: за екстремального знецінення оцінка сягає <strong>0,55</strong>, тоді як для зміцнення становить близько <strong>0,1</strong>.</p><div class="erpt-callout"><strong>Висновок для політики.</strong> Валютні інтервенції можуть згладжувати надмірні коливання, але залишаються допоміжним, а не основним інструментом.</div></aside>
+            </div>
+        </section>
+
+        <section class="section" id="expectations">
+            <div class="section-heading"><div><span class="section-number">05 / Очікування та комунікація</span><h2>Очікування формують силу реакції</h2></div><p>У 2016–2021 роках очікування поступово поліпшувалися, але залишалися зміщеними вгору. Валютний курс пояснював значну частину коливань очікувань бізнесу.</p></div>
+            <div class="expect-grid">
+                <div class="expect-chart">
+                    <div class="chart-title"><h3>Інфляційні очікування різних груп</h3><small>Якісна схема, не фактичний часовий ряд</small></div>
+                    <svg viewBox="0 0 520 260" role="img" aria-label="Домогосподарства мають найвищі та мінливі очікування, фінансові аналітики найближчі до інфляційної цілі"><path class="gridline" d="M48 45H500 M48 95H500 M48 145H500 M48 195H500"/><path class="axis" d="M48 18V215H500"/><path d="M48 150H500" stroke="#00873E" stroke-width="1.5" stroke-dasharray="4 4"/><text class="svg-label" x="53" y="143">ціль НБУ — орієнтир</text><path class="expect-path expect-households" d="M53 57 C99 34 126 74 166 52 S232 72 273 47 S335 67 375 51 S441 65 494 42"/><path class="expect-path expect-business" d="M53 103 C101 92 129 112 166 100 S233 108 273 92 S336 104 375 96 S443 105 494 91"/><path class="expect-path expect-analysts" d="M53 156 C104 150 133 159 166 153 S231 157 273 149 S337 155 375 151 S444 154 494 148"/><text class="svg-label" x="48" y="239">2016</text><text class="svg-label" x="260" y="239">2018–19</text><text class="svg-label" x="472" y="239">2021</text></svg>
+                    <div class="legend"><span style="color:#8C6B37">Домогосподарства</span><span>Бізнес</span><span class="legend-black">Фінансові аналітики</span></div>
+                </div>
+                <aside class="guidance">
+                    <span class="section-number">Forward guidance</span><h3 style="margin-top:.35rem">Прогноз ставки як сигнал ринку</h3>
+                    <div class="guidance-step"><b>З 2019</b><p>НБУ почав публікувати прогнозні орієнтири щодо облікової ставки.</p></div>
+                    <div class="guidance-step"><b>Короткий горизонт</b><p>Оприлюднена траєкторія, схоже, впливає на ринкові форвардні ставки.</p></div>
+                    <div class="guidance-step"><b>Довший горизонт</b><p>Зростає роль строкової премії, тому зв’язок із прогнозом слабшає.</p></div>
+                    <p style="margin-top:1rem"><strong>Що допомагає:</strong> послідовна комунікація й довіра до цілі НБУ закріплюють очікування та роблять політику ефективнішою.</p>
+                </aside>
+            </div>
+        </section>
+
+        <section class="section" id="context">
+            <div class="section-heading"><div><span class="section-number">06 / Контекст та висновки</span><h2>Режим, перевірений кризами</h2></div><p>Досвід 2015–2021 років показав, як працює традиційне інфляційне таргетування після глибокої макроекономічної перебудови.</p></div>
+            <div class="timeline">
+                <article><b>2014–2015</b><p>Криза, валютний тиск і висока інфляція. НБУ відмовляється від фіксованого курсу та переходить до нового режиму.</p></article>
+                <article><b>2015</b><p>Запровадження інфляційного таргетування; облікова ставка стає основним інструментом політики.</p></article>
+                <article><b>2016–2021</b><p>Відновлення стабільності, поступове поліпшення очікувань і розвиток процентної трансмісії.</p></article>
+                <article><b>2022</b><p>Повномасштабне вторгнення змушує тимчасово застосувати адміністративні обмеження та фіксацію курсу.</p></article>
+            </div>
+            <div style="margin-top:2rem"><h3 style="margin-bottom:1rem">Що посилить ефективність політики?</h3><div class="recommendations">
+                <article class="recommendation"><strong>Поглиблювати фінансові ринки</strong><p>Це допоможе кредитуванню відновлюватися та підсилить вплив облікової ставки на економіку.</p></article>
+                <article class="recommendation"><strong>Зміцнювати довіру й комунікацію</strong><p>Краще закріплені очікування зменшують інфляційні коливання та ціну дезінфляції.</p></article>
+                <article class="recommendation"><strong>Зберігати плаваючий курс як основу</strong><p>Валютні інтервенції — допоміжний інструмент для згладжування надмірної волатильності.</p></article>
+                <article class="recommendation"><strong>Повернутися до ринкових інструментів</strong><p>Нормалізація умов створює основу для відновлення стандартного інфляційного таргетування.</p></article>
+            </div></div>
+            <p class="source-note">Матеріал узагальнює наведений опис звіту «Між російськими вторгненнями: Механізм трансмісії монетарної політики в Україні у 2015–2021 роках». Графіки, позначені як схематичні, відтворюють якісні висновки, а не оцифровані дані оригінальних рисунків.</p>
+        </section>
+    </main>
+
+    <footer aria-label="Банкноти різних валют">
+        <svg class="money-art" viewBox="0 0 1250 220" preserveAspectRatio="xMaxYMid meet" aria-hidden="true">
+            <g transform="translate(110 35) rotate(12 1000 215)">
+                <g transform="rotate(-32 1000 215)">
+                    <rect x="785" y="20" width="430" height="205" fill="#527b50" />
+                    <rect x="799" y="34" width="402" height="177" fill="none" stroke="#FFFFFF" stroke-width="3" />
+                    <circle cx="1000" cy="125" r="38" fill="none" stroke="#38563b" stroke-width="3" />
+                    <text x="1000" y="139" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" fill="#FFFFFF">$</text>
+                </g>
+                <g transform="rotate(-16 1000 215)">
+                    <rect x="785" y="20" width="430" height="205" fill="#9a7650" />
+                    <rect x="799" y="34" width="402" height="177" fill="none" stroke="#FFFFFF" stroke-width="3" />
+                    <circle cx="1000" cy="125" r="38" fill="none" stroke="#70583d" stroke-width="3" />
+                    <text x="1000" y="139" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" fill="#FFFFFF">€</text>
+                </g>
+                <g transform="rotate(0 1000 215)">
+                    <rect x="785" y="20" width="430" height="205" fill="#477783" />
+                    <rect x="799" y="34" width="402" height="177" fill="none" stroke="#FFFFFF" stroke-width="3" />
+                    <circle cx="1000" cy="125" r="38" fill="none" stroke="#315a63" stroke-width="3" />
+                    <text x="1000" y="139" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" fill="#FFFFFF">₴</text>
+                </g>
+                <g transform="rotate(16 1000 215)">
+                    <rect x="785" y="20" width="430" height="205" fill="#b18a48" />
+                    <rect x="799" y="34" width="402" height="177" fill="none" stroke="#FFFFFF" stroke-width="3" />
+                    <circle cx="1000" cy="125" r="38" fill="none" stroke="#806632" stroke-width="3" />
+                    <text x="1000" y="139" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" fill="#FFFFFF">₴</text>
+                </g>
+                <g transform="rotate(32 1000 215)">
+                    <rect x="785" y="20" width="430" height="205" fill="#4b805b" />
+                    <rect x="799" y="34" width="402" height="177" fill="none" stroke="#FFFFFF" stroke-width="3" />
+                    <circle cx="1000" cy="125" r="38" fill="none" stroke="#345d42" stroke-width="3" />
+                    <text x="1000" y="139" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="42" font-weight="700" fill="#FFFFFF">$</text>
+                </g>
+            </g>
+        </svg>
+        <p class="footer-source"><a href="https://bank.gov.ua/en/news/all/mij-rosiyskimi-vtorgnennyami-transmisiyniy-mehanizm-monetarnoyi-politiki-v-ukrayini-u-2015-2021-rokah-anton-gruy-ta-in-eng#:~:text=Cite%20as%3A%20Grui%2C%20A.%2C%20Aragon%2C%20N.%2C%20Faryna%2C,National%20Bank%20of%20Ukraine.%20Retrieved%20from%20https%3A%2F%2Fbank.gov.ua%2Fadmin_uploads%2Farticle%2FWP_2023%2D02_Grui_et_al.pdf" target="_blank" rel="noopener noreferrer">Національний банк України — Дослідження монетарної політики</a></p>
+    </footer>
+
+    <button class="back-to-top" type="button" aria-label="На початок сторінки" title="На початок сторінки" aria-hidden="true" tabindex="-1">↑</button>
+
+    <script>
+        (() => {
+            const progress = document.querySelector('.reading-progress');
+            const updateProgress = () => {
+                const scrollable = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+                const percentage = scrollable ? Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100)) : 0;
+                progress.style.width = `${percentage}%`;
+            };
+            window.addEventListener('scroll', updateProgress, { passive: true });
+            window.addEventListener('resize', updateProgress);
+            updateProgress();
+        })();
+    </script>
+    <script>
+        (() => {
+            const navLinks = [...document.querySelectorAll('header nav a[href^="#"]')];
+            const sections = navLinks
+                .map((link) => ({ link, section: document.getElementById(link.hash.slice(1)) }))
+                .filter((item) => item.section);
+            const header = document.querySelector('header');
+            let activeId = '';
+            let framePending = false;
+
+            function setActiveSection(id) {
+                if (!id || id === activeId) return;
+                activeId = id;
+                sections.forEach(({ link, section }) => {
+                    if (section.id === id) link.setAttribute('aria-current', 'location');
+                    else link.removeAttribute('aria-current');
+                });
+            }
+
+            function updateActiveSection() {
+                framePending = false;
+                if (!sections.length) return;
+
+                const headerBottom = header?.getBoundingClientRect().bottom ?? 0;
+                const activationLine = Math.max(24, headerBottom + 12);
+                let current = sections[0];
+                let nearestTop = -Infinity;
+
+                for (const item of sections) {
+                    const top = item.section.getBoundingClientRect().top;
+                    if (top <= activationLine && top > nearestTop) {
+                        current = item;
+                        nearestTop = top;
+                    }
+                }
+
+                const atPageBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+                if (atPageBottom) current = sections[sections.length - 1];
+                setActiveSection(current.section.id);
+            }
+
+            function scheduleActiveUpdate() {
+                if (framePending) return;
+                framePending = true;
+                window.requestAnimationFrame(updateActiveSection);
+            }
+
+            function scrollToCurrentHash() {
+                const section = document.getElementById(window.location.hash.slice(1));
+                if (section) {
+                    section.scrollIntoView({
+                        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+                    });
+                } else {
+                    window.scrollTo({ top: 0, behavior: 'auto' });
+                }
+                scheduleActiveUpdate();
+            }
+
+            let historyNavigationPending = false;
+            function scheduleHistoryNavigation() {
+                if (historyNavigationPending) return;
+                historyNavigationPending = true;
+                window.requestAnimationFrame(() => {
+                    historyNavigationPending = false;
+                    scrollToCurrentHash();
+                });
+            }
+
+            navLinks.forEach((link) => {
+                link.addEventListener('click', (event) => {
+                    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                    const section = document.getElementById(link.hash.slice(1));
+                    if (!section) return;
+                    event.preventDefault();
+                    if (window.location.hash !== link.hash) history.pushState(null, '', link.hash);
+                    section.scrollIntoView({
+                        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+                    });
+                    scheduleActiveUpdate();
+                });
+            });
+
+            window.addEventListener('scroll', scheduleActiveUpdate, { passive: true });
+            window.addEventListener('resize', scheduleActiveUpdate);
+            window.addEventListener('pageshow', scheduleActiveUpdate);
+            window.addEventListener('hashchange', scheduleHistoryNavigation);
+            window.addEventListener('popstate', scheduleHistoryNavigation);
+            scheduleActiveUpdate();
+        })();
+    </script>
+    <script>
+        (() => {
+            const backToTop = document.querySelector('.back-to-top');
+            const updateBackToTop = () => {
+                const visible = window.scrollY > 400;
+                backToTop.classList.toggle('is-visible', visible);
+                backToTop.setAttribute('aria-hidden', String(!visible));
+                backToTop.tabIndex = visible ? 0 : -1;
+            };
+            window.addEventListener('scroll', updateBackToTop, { passive: true });
+            updateBackToTop();
+            backToTop.addEventListener('click', () => {
+                const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+            });
+        })();
+    </script>
+    <script>
+        (() => {
+            const revealTargets = document.querySelectorAll(
+                'main > section, .takeaway, .mini-chart, .flow-step, .rate-item, .bar-row, .timeline article, .recommendation'
+            );
+            // Кривые должны быть полностью видимы сразу: анимация dashoffset
+            // обрывала их на промежуточной точке при адаптивной загрузке.
+
+            if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                revealTargets.forEach((element) => element.classList.add('reveal-item', 'is-visible'));
+                return;
+            }
+
+            document.documentElement.classList.add('motion-ready');
+            const observer = new IntersectionObserver((entries, currentObserver) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        currentObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.12, rootMargin: '0px 0px -35px 0px' });
+            revealTargets.forEach((element) => {
+                element.classList.add('reveal-item');
+                observer.observe(element);
+            });
+        })();
+    </script>
+    <script>
+        const scenarioCopy = {
+            low: ['Низька довіра:', 'очікування зростають вище й довше залишаються підвищеними. Щоб приборкати інфляцію, НБУ доводиться піднімати ставку агресивніше; спад випуску може бути глибшим.'],
+            high: ['Середня довіра:', 'реакція очікувань та інфляції помірніша, ніж за низької довіри, але шок усе ще потребує відчутної відповіді монетарної політики.'],
+            full: ['Повна довіра:', 'інфляційні очікування краще закріплені, тому початковий стрибок інфляції менший і швидше згасає; потреба в різкому підвищенні ставки нижча.']
+        };
+        const panel = document.getElementById('cred-panel');
+        const credChart = document.getElementById('cred-chart');
+        const copy = document.getElementById('scenario-copy');
+        let activeScenario = panel.dataset.scenario || 'low';
+
+        const renderScenarioCopy = () => {
+            const [label, description] = scenarioCopy[activeScenario];
+            const translate = window.t || ((value) => value);
+            copy.innerHTML = `<strong>${translate(label)}</strong> ${translate(description)}`;
+        };
+
+        const selectScenario = (mode, activeButton) => {
+            if (!scenarioCopy[mode]) return;
+            activeScenario = mode;
+            panel.dataset.scenario = mode;
+            credChart.dataset.scenario = mode;
+            renderScenarioCopy();
+            document.querySelectorAll('.scenario-btn').forEach((button) => {
+                button.setAttribute('aria-pressed', String(button === activeButton));
+            });
+        };
+
+        document.querySelectorAll('.scenario-btn').forEach((button) => {
+            button.addEventListener('click', () => selectScenario(button.dataset.mode, button));
+        });
+        window.addEventListener('nbu-language-change', renderScenarioCopy);
+    </script>
+    <script>
+        (() => {
+            const selectable = document.querySelectorAll('.takeaway, .timeline article, .recommendation');
+
+            selectable.forEach((item) => {
+                item.tabIndex = 0;
+                item.setAttribute('role', 'button');
+                const toggle = () => item.classList.toggle('is-selected');
+                item.addEventListener('click', (event) => {
+                    if (event.target.closest('a, button')) return;
+                    toggle();
+                });
+                item.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        toggle();
+                    }
+                });
+            });
+        })();
+    </script>
+    <script>
+        // Add new Ukrainian source strings and their English equivalents to this dictionary.
+        // The original Ukrainian text is kept per text node, so switching languages never loses UI state.
+        (() => {
+            const LANG_UK = 'uk';
+            const LANG_EN = 'en';
+            const STORAGE_KEY = 'nbu-policy-language-v1';
+            const enEntries = {
+                'МОНЕТАРНА ПОЛІТИКА': 'MONETARY POLICY',
+                'Огляд': 'Overview', 'Шок ставки': 'Rate shock', 'Довіра': 'Credibility', 'Канали': 'Channels',
+                'Валютний канал': 'Exchange-rate channel', 'Очікування': 'Expectations', 'Контекст': 'Context',
+                'Дослідження НБУ · 2015–2021': 'NBU research · 2015–2021',
+                'Чи стримує облікова ставка інфляцію?': 'Can the policy rate curb inflation?',
+                'Як рішення Національного банку передаються до цін, валютного курсу, кредитів, депозитів та очікувань — і чому довіра до політики має значення.': 'How National Bank decisions pass through to prices, the exchange rate, loans, deposits, and expectations—and why policy credibility matters.',
+                'Інфляційне таргетування': 'Inflation targeting', 'Мала відкрита економіка': 'Small open economy',
+                'Період між двома вторгненнями': 'The period between two invasions',
+                'У 2015–2021 роках короткострокова ставка стала основним інструментом монетарної політики України. Дослідження показує: ': 'From 2015 to 2021, the short-term interest rate became Ukraine’s main monetary policy instrument. The research finds that ',
+                'підвищення ставки зрештою знижує інфляцію': 'raising the policy rate ultimately lowers inflation',
+                ', але ефект проходить через кілька каналів і проявляється з часовими лагами. Його сила залежить від довіри, стану фінансової системи та валютного курсу.': ', but the effect travels through several channels and takes time to emerge. Its strength depends on credibility, the state of the financial system, and the exchange rate.',
+                'Головні висновки': 'Key findings',
+                'Ставка впливає на інфляцію': 'The policy rate affects inflation',
+                'Жорсткіша політика охолоджує попит, підтримує гривню та з часом стримує зростання цін.': 'Tighter policy cools demand, supports the hryvnia, and gradually curbs price growth.',
+                'Канали працюють неоднаково': 'Channels work differently',
+                'Овернайт-ставка реагує швидко; передача до роздрібних ставок повільніша й неповна.': 'The overnight rate responds quickly; pass-through to retail rates is slower and incomplete.',
+                'Довіра посилює результат': 'Credibility strengthens the outcome',
+                'Добре закріплені очікування зменшують інфляційну реакцію та потребу в різкому підвищенні ставки.': 'Well-anchored expectations reduce the inflation response and the need for sharp rate increases.',
+                '01 / Передача політичного рішення': '01 / Policy transmission',
+                'Що відбувається після підвищення ставки?': 'What happens after a rate increase?',
+                'Напівструктурні QPM-моделі показують послідовність реакцій. Схеми нижче передають напрям і приблизний час реакції, а не фактичні числові оцінки.': 'Semi-structural QPM models show the sequence of responses. The charts below illustrate direction and approximate timing, not actual numerical estimates.',
+                'Імпульсна реакція на жорсткий монетарний шок': 'Impulse responses to a monetary tightening shock',
+                'Схематична ілюстрація · квартали після шоку': 'Schematic illustration · quarters after the shock',
+                'Річна інфляція': 'Annual inflation', 'Знижується поступово': 'Declines gradually',
+                'Облікова ставка': 'Policy rate', 'Стрибок із подальшим поверненням': 'Jumps, then returns toward baseline',
+                'Номінальний курс': 'Nominal exchange rate', 'Гривня спершу зміцнюється': 'The hryvnia initially appreciates',
+                'Розрив випуску': 'Output gap', 'Активність тимчасово слабшає': 'Economic activity temporarily weakens',
+                'Умовна форма кривих узагальнює напрямки, описані в матеріалах дослідження. Для курсу зниження на схемі означає зміцнення гривні; конкретна реакція залежить від моделі та шоку.': 'The stylized curves summarize directions described in the research. For the exchange rate, a downward movement represents hryvnia appreciation; the specific response depends on the model and shock.',
+                '02 / Довіра до політики': '02 / Policy credibility',
+                'Однаковий шок — різна ціна для економіки': 'The same shock, a different economic cost',
+                'Коли суспільство довіряє цілі НБУ, очікування краще закріплені. За низької довіри інфляційний шок вимагає сильнішої реакції ставки.': 'When the public trusts the NBU’s target, expectations are better anchored. With low credibility, an inflation shock calls for a stronger interest-rate response.',
+                'Оберіть сценарій довіри': 'Choose a credibility scenario',
+                'Рівень довіри до монетарної політики': 'Credibility of monetary policy',
+                'Низька': 'Low', 'Середня': 'Medium', 'Повна': 'Full',
+                'Низька довіра:': 'Low credibility:',
+                ' очікування зростають вище й довше залишаються підвищеними. Щоб приборкати інфляцію, НБУ доводиться піднімати ставку агресивніше; спад випуску може бути глибшим.': ' expectations rise further and remain elevated for longer. To contain inflation, the NBU has to raise rates more aggressively; the output decline may be deeper.',
+                'Середня довіра:': 'Medium credibility:',
+                ' реакція очікувань та інфляції помірніша, ніж за низької довіри, але шок усе ще потребує відчутної відповіді монетарної політики.': ' expectations and inflation respond less than under low credibility, but the shock still requires a meaningful monetary policy response.',
+                'Повна довіра:': 'Full credibility:',
+                ' інфляційні очікування краще закріплені, тому початковий стрибок інфляції менший і швидше згасає; потреба в різкому підвищенні ставки нижча.': ' inflation expectations are better anchored, so the initial inflation jump is smaller and fades faster; the need for a sharp rate increase is lower.',
+                'Очікувана інфляційна реакція': 'Expected inflation response',
+                'Якісна схема шоку пропозиції': 'Stylized supply-shock illustration',
+                'шок': 'shock', 'час': 'time', 'повернення': 'return',
+                'Порівняння реакцій': 'Response comparison', 'Ставка та випуск': 'Policy rate and output',
+                'Слабша довіра — жорсткіше підвищення ставки й глибше короткострокове охолодження.': 'Weaker credibility means a sharper rate increase and a deeper short-term slowdown.',
+                'Очікування': 'Expectations',
+                'За повної довіри вплив шоку на інфляційні очікування менший і швидше згасає.': 'With full credibility, the shock has a smaller and more short-lived effect on inflation expectations.',
+                'Схематичне порівняння; смуги позначають відносну силу реакції, а не оцінені відсоткові значення.': 'Schematic comparison; bars indicate relative response strength, not estimated percentage values.',
+                '03 / Процентний канал': '03 / Interest-rate channel',
+                'Від облікової ставки — до ставок банків': 'From the policy rate to bank rates',
+                'Операційна передача до міжбанківського ринку стала виразнішою після запровадження інфляційного таргетування. У роздрібному сегменті швидкість залежить від позичальника та типу банку.': 'Pass-through to the interbank market became clearer after inflation targeting was introduced. In retail markets, the speed depends on the borrower and the type of bank.',
+                'Як передається зміна ставки': 'How a rate change is transmitted',
+                'Швидкість і повнота — якісне узагальнення': 'Speed and completeness — qualitative summary',
+                'Послідовність процентного каналу': 'Sequence of the interest-rate channel',
+                'Рішення НБУ': 'NBU decision', 'Облікова ставка задає короткостроковий сигнал політики.': 'The policy rate sets the short-term policy signal.',
+                'Міжбанк': 'Interbank market', 'Овернайт-ставка швидко зблизилася з обліковою.': 'The overnight rate quickly converged toward the policy rate.',
+                'Банківські ставки': 'Bank rates', 'Депозити й кредити реагують із різними лагами.': 'Deposit and lending rates respond with different lags.',
+                'Попит та інфляція': 'Demand and inflation', 'Зміна вартості фінансування впливає на рішення економічних агентів.': 'Changes in funding costs affect economic decisions.',
+                'Передача до ринку': 'Pass-through to markets', 'Овернайт на міжбанку': 'Interbank overnight rate',
+                ' швидко · майже повно': ' fast · near-complete', 'Дохідність ОВДП': 'Government bond yields',
+                ' помітна реакція': ' clear response', 'Депозити населення': 'Household deposits',
+                ' повільніше · неповно': ' slower · incomplete', 'Кредити бізнесу': 'Business loans',
+                ' залежить від сегмента': ' varies by segment', 'Хто реагує швидше?': 'Who responds faster?',
+                'Великі підприємства': 'Large firms', ' швидше · повніша передача': ' faster · more complete pass-through',
+                'Малі та мікропідприємства': 'Small and micro firms', ' повільніше · частково': ' slower · partial',
+                'Банки з іноземним капіталом': 'Foreign-owned banks', ' швидша передача': ' faster pass-through',
+                'Державні та приватні банки': 'State-owned and private banks', ' повільніше / частково': ' slower / partial',
+                'Довжина смуг — візуальна якісна шкала, а не статистична оцінка. Трансмісія кредитних ставок була сильнішою для великих позичальників і в банках з іноземним капіталом; пандемія COVID-19 погіршила передачу до частини ринкових ставок.': 'Bar lengths are a qualitative visual scale, not statistical estimates. Lending-rate pass-through was stronger for large borrowers and foreign-owned banks; the COVID-19 pandemic weakened pass-through to some market rates.',
+                '04 / Валютний канал': '04 / Exchange-rate channel',
+                'Курс швидко доходить до споживчих цін': 'Exchange-rate movements quickly reach consumer prices',
+                'Відкрита економіка України чутлива до валютного курсу. Ефект перенесення (ERPT) асиметричний: знецінення гривні впливає на ціни сильніше, ніж її зміцнення.': 'Ukraine’s open economy is sensitive to exchange-rate movements. Exchange-rate pass-through (ERPT) is asymmetric: hryvnia depreciation affects prices more strongly than appreciation.',
+                'Ефект перенесення на ціни': 'Exchange-rate pass-through to prices',
+                'Орієнтовні оцінки з опису дослідження': 'Approximate estimates from the research summary',
+                'Раніше / загалом': 'Earlier / overall', 'Пізніше / загалом': 'Later / overall',
+                'Зміцнення': 'Appreciation', 'Помірне знецінення': 'Moderate depreciation',
+                'Екстремальне знецінення': 'Extreme depreciation',
+                'Значення наведено як у вихідному описі; шкала смуг нормована до 0,6.': 'Values are reproduced from the source summary; bars are scaled to 0.6.',
+                'КУРС І ЦІНИ · ERPT': 'EXCHANGE RATES & PRICES · ERPT',
+                'Знецінення впливає сильніше, ніж зміцнення': 'Depreciation has a stronger effect than appreciation',
+                'Але різкі курсові рухи мають більший вплив: за екстремального знецінення оцінка сягає ': 'But sharp exchange-rate movements have a greater effect: under extreme depreciation, the estimate reaches ',
+                ', тоді як для зміцнення становить близько ': ', while appreciation is associated with about ',
+                'Висновок для політики.': 'Policy takeaway.',
+                ' Валютні інтервенції можуть згладжувати надмірні коливання, але залишаються допоміжним, а не основним інструментом.': ' Foreign-exchange interventions can smooth excessive volatility, but remain a supporting rather than primary tool.',
+                'Після валютної кризи та переходу до інфляційного таргетування загальний ефект перенесення знизився приблизно з ': 'After the currency crisis and the move to inflation targeting, overall pass-through declined from about ',
+                ' до ': ' to ', ' у ковзних оцінках.': ' in rolling estimates.',
+                'Практичний висновок: валютні інтервенції можуть згладжувати надмірні коливання, але залишаються допоміжним, а не основним інструментом політики.': 'Policy implication: foreign-exchange interventions can smooth excessive volatility, but remain a supporting rather than primary policy tool.',
+                '05 / Очікування та комунікація': '05 / Expectations and communication',
+                'Очікування формують силу реакції': 'Expectations shape the strength of the response',
+                'У 2016–2021 роках очікування поступово поліпшувалися, але залишалися зміщеними вгору. Валютний курс пояснював значну частину коливань очікувань бізнесу.': 'Expectations gradually improved from 2016 to 2021, but remained upward-biased. Exchange-rate movements explained a large share of fluctuations in business expectations.',
+                'Інфляційні очікування різних груп': 'Inflation expectations across groups',
+                'Якісна схема, не фактичний часовий ряд': 'Stylized illustration, not an actual time series',
+                'ціль НБУ — орієнтир': 'NBU target — reference', 'Домогосподарства': 'Households', 'Бізнес': 'Businesses',
+                'Фінансові аналітики': 'Financial analysts', 'Forward guidance': 'Forward guidance',
+                'Прогноз ставки як сигнал ринку': 'The policy-rate forecast as a market signal',
+                'З 2019': 'Since 2019', 'НБУ почав публікувати прогнозні орієнтири щодо облікової ставки.': 'The NBU began publishing policy-rate projections.',
+                'Короткий горизонт': 'Short horizon', 'Оприлюднена траєкторія, схоже, впливає на ринкові форвардні ставки.': 'The published path appears to influence market forward rates.',
+                'Довший горизонт': 'Longer horizon', 'Зростає роль строкової премії, тому зв’язок із прогнозом слабшає.': 'The term premium becomes more important, weakening the link to the projection.',
+                'Що допомагає:': 'What helps:',
+                ' послідовна комунікація й довіра до цілі НБУ закріплюють очікування та роблять політику ефективнішою.': ' consistent communication and trust in the NBU target anchor expectations and make policy more effective.',
+                '06 / Контекст та висновки': '06 / Context and conclusions',
+                'Режим, перевірений кризами': 'A regime tested by crises',
+                'Досвід 2015–2021 років показав, як працює традиційне інфляційне таргетування після глибокої макроекономічної перебудови.': 'The 2015–2021 experience showed how conventional inflation targeting works after a profound macroeconomic adjustment.',
+                'Криза, валютний тиск і висока інфляція. НБУ відмовляється від фіксованого курсу та переходить до нового режиму.': 'Crisis, exchange-rate pressure, and high inflation. The NBU abandons the peg and moves to a new regime.',
+                'Запровадження інфляційного таргетування; облікова ставка стає основним інструментом політики.': 'Inflation targeting is introduced; the policy rate becomes the main policy instrument.',
+                'Відновлення стабільності, поступове поліпшення очікувань і розвиток процентної трансмісії.': 'Stability returns, expectations gradually improve, and interest-rate transmission develops.',
+                'Повномасштабне вторгнення змушує тимчасово застосувати адміністративні обмеження та фіксацію курсу.': 'The full-scale invasion leads to temporary administrative restrictions and a fixed exchange rate.',
+                'Що посилить ефективність політики?': 'What can strengthen policy effectiveness?',
+                'Поглиблювати фінансові ринки': 'Deepen financial markets',
+                'Це допоможе кредитуванню відновлюватися та підсилить вплив облікової ставки на економіку.': 'This will support the recovery of lending and strengthen the policy rate’s impact on the economy.',
+                'Зміцнювати довіру й комунікацію': 'Strengthen credibility and communication',
+                'Краще закріплені очікування зменшують інфляційні коливання та ціну дезінфляції.': 'Better-anchored expectations reduce inflation volatility and the cost of disinflation.',
+                'Зберігати плаваючий курс як основу': 'Maintain the floating exchange rate as the foundation',
+                'Валютні інтервенції — допоміжний інструмент для згладжування надмірної волатильності.': 'Foreign-exchange interventions are a supporting tool for smoothing excessive volatility.',
+                'Повернутися до ринкових інструментів': 'Return to market-based instruments',
+                'Нормалізація умов створює основу для відновлення стандартного інфляційного таргетування.': 'Normalization creates the conditions for a return to conventional inflation targeting.',
+                'Матеріал узагальнює наведений опис звіту «Між російськими вторгненнями: Механізм трансмісії монетарної політики в Україні у 2015–2021 роках». Графіки, позначені як схематичні, відтворюють якісні висновки, а не оцифровані дані оригінальних рисунків.': 'This page summarizes the report “Between Two Russian Invasions: The Monetary Policy Transmission Mechanism in Ukraine in 2015–2021.” Charts marked as schematic represent qualitative findings, not digitized data from the original figures.',
+                'На початок сторінки': 'Back to top',
+                'Доступна нова версія сайту.': 'A new version of the site is available.', 'Оновити': 'Update',
+                'Національний банк України — Дослідження монетарної політики': 'National Bank of Ukraine — Monetary Policy Research',
+                'Будівля Національного банку України': 'National Bank of Ukraine building',
+                'Схематичне зниження інфляції після підвищення ставки': 'Schematic decline in inflation after a policy-rate increase',
+                'Схематичне коротке підвищення облікової ставки': 'Schematic short-term increase in the policy rate',
+                'Схематичне тимчасове зміцнення гривні після підвищення ставки': 'Schematic temporary hryvnia appreciation after a policy-rate increase',
+                'Схематичне короткострокове зниження розриву випуску': 'Schematic short-term decline in the output gap',
+                'За низької довіри інфляційна реакція вища і триваліша': 'Inflation response is higher and more persistent under low credibility',
+                'Домогосподарства мають найвищі та мінливі очікування, фінансові аналітики найближчі до інфляційної цілі': 'Households have the highest and most volatile expectations; financial analysts are closest to the inflation target',
+                'Мова сторінки': 'Page language', 'Українська мова': 'Ukrainian', 'English language': 'English',
+                'Навігація сторінкою': 'Page navigation',
+                'Ілюстрація оцінок ефекту перенесення: загальний показник знизився з приблизно 0,6 до 0,3; зміцнення близько 0,1; помірне знецінення близько 0,2; екстремальне знецінення близько 0,55': 'Illustration of pass-through estimates: the overall measure fell from about 0.6 to 0.3; appreciation is about 0.1, moderate depreciation about 0.2, and extreme depreciation about 0.55.',
+                '0,6 до 0,3': '0.6 to 0.3', '~0,6': '~0.6', '~0,3': '~0.3', '~0,1': '~0.1', '~0,2': '~0.2', '~0,55': '~0.55',
+                '0,55': '0.55', 'у ковзних оцінках.': 'in rolling estimates.'
+            };
+            const en = Object.fromEntries(Object.entries(enEntries).map(([key, value]) => [key.trim(), value.trim()]));
+            const dictionaries = { uk: Object.create(null), en };
+            const sourceText = new WeakMap();
+            const sourceAttributes = new WeakMap();
+            let currentLanguage = window.__nbuInitialLanguage || LANG_UK;
+            const supported = new Set([LANG_UK, LANG_EN]);
+            const t = (key) => dictionaries[currentLanguage]?.[key] ?? key;
+
+            function translateTree(root = document.body) {
+                const textNodes = [];
+                if (root.nodeType === Node.TEXT_NODE) textNodes.push(root);
+                else {
+                    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+                    let node;
+                    while ((node = walker.nextNode())) textNodes.push(node);
+                }
+                for (const node of textNodes) {
+                    if (!sourceText.has(node)) sourceText.set(node, node.nodeValue);
+                    const original = sourceText.get(node);
+                    const trimmed = original.trim();
+                    if (!trimmed) continue;
+                    const translated = currentLanguage === LANG_EN ? t(trimmed) : trimmed;
+                    const nextText = currentLanguage === LANG_EN ? original.replace(trimmed, translated) : original;
+                    if (node.nodeValue !== nextText) node.nodeValue = nextText;
+                }
+
+                const elements = root.nodeType === Node.ELEMENT_NODE
+                    ? [root, ...root.querySelectorAll('*')]
+                    : (root.nodeType === Node.DOCUMENT_NODE || root.nodeType === Node.DOCUMENT_FRAGMENT_NODE)
+                        ? [...root.querySelectorAll('*')]
+                        : [];
+                for (const element of elements) {
+                    for (const attribute of ['aria-label', 'alt', 'title']) {
+                        if (element.hasAttribute('data-language') && (attribute === 'title' || attribute === 'aria-label')) continue;
+                        if (!element.hasAttribute(attribute)) continue;
+                        let values = sourceAttributes.get(element);
+                        if (!values) { values = {}; sourceAttributes.set(element, values); }
+                        if (!(attribute in values)) values[attribute] = element.getAttribute(attribute);
+                        const original = values[attribute];
+                        element.setAttribute(attribute, currentLanguage === LANG_EN ? t(original) : original);
+                    }
+                }
+                document.documentElement.lang = currentLanguage;
+                document.documentElement.dir = 'ltr';
+                document.title = currentLanguage === LANG_EN ? 'NBU Policy Rate and Inflation | 2015–2021' : 'Облікова ставка НБУ та інфляція | 2015–2021';
+                const description = document.querySelector('meta[name="description"]');
+                if (description) description.content = currentLanguage === LANG_EN
+                    ? 'An interactive overview of NBU research on policy-rate transmission and inflation targeting in Ukraine, 2015–2021.'
+                    : 'Інтерактивний огляд дослідження НБУ про трансмісію облікової ставки та інфляційне таргетування в Україні у 2015–2021 роках.';
+                document.querySelectorAll('[data-language]').forEach((button) => {
+                    const targetLanguage = button.dataset.language;
+                    const languageName = targetLanguage === LANG_UK
+                        ? (currentLanguage === LANG_EN ? 'Ukrainian' : 'українську')
+                        : (currentLanguage === LANG_EN ? 'English' : 'англійську');
+                    button.setAttribute('aria-pressed', String(targetLanguage === currentLanguage));
+                    button.setAttribute('aria-label', currentLanguage === LANG_EN ? `Switch to ${languageName}` : `Перейти на ${languageName} мову`);
+                    button.title = currentLanguage === LANG_EN ? `Switch language to ${languageName}` : `Змінити мову на ${languageName}`;
+                });
+            }
+
+            function setLanguage(language, persist = true) {
+                if (!supported.has(language)) language = LANG_EN;
+                currentLanguage = language;
+                if (persist) {
+                    try { localStorage.setItem(STORAGE_KEY, language); } catch (_) {}
+                }
+                const url = new URL(window.location.href);
+                url.searchParams.set('lang', language);
+                window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+                translateTree();
+                window.dispatchEvent(new Event('nbu-language-change'));
+            }
+
+            document.querySelectorAll('[data-language]').forEach((button) => {
+                button.addEventListener('click', () => setLanguage(button.dataset.language));
+            });
+            window.addEventListener('storage', (event) => {
+                if (event.key === STORAGE_KEY && supported.has(event.newValue)) setLanguage(event.newValue, false);
+            });
+            const observer = new MutationObserver((records) => {
+                for (const record of records) {
+                    record.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) translateTree(node);
+                    });
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+            window.t = t;
+            translateTree();
+            document.documentElement.classList.remove('i18n-pending');
+        })();
+    </script>
+    <script>
+        (() => {
+            if (!('serviceWorker' in navigator) || !/^https?:$/.test(window.location.protocol)) return;
+            const SITE_VERSION = '1'; // Збільшуйте номер після кожного опублікованого оновлення.
+            const notice = document.getElementById('update-notice');
+            const applyButton = document.getElementById('update-apply');
+            let applyUpdate = false;
+            let currentRegistration;
+
+            function showUpdate(registration) {
+                if (registration.waiting && navigator.serviceWorker.controller) notice.hidden = false;
+            }
+
+            navigator.serviceWorker.register(`./sw.js?v=${encodeURIComponent(SITE_VERSION)}`).then((registration) => {
+                currentRegistration = registration;
+                showUpdate(registration);
+                registration.addEventListener('updatefound', () => {
+                    const installing = registration.installing;
+                    if (!installing) return;
+                    installing.addEventListener('statechange', () => showUpdate(registration));
+                });
+                const checkForUpdates = () => registration.update().catch(() => {});
+                window.addEventListener('online', checkForUpdates);
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') checkForUpdates();
+                });
+                window.setInterval(checkForUpdates, 60 * 60 * 1000);
+            }).catch(() => {});
+
+            applyButton.addEventListener('click', () => {
+                const waitingWorker = currentRegistration?.waiting;
+                if (!waitingWorker) return;
+                applyUpdate = true;
+                waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+            });
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (applyUpdate) window.location.reload();
+            });
+        })();
+    </script>
+</body>
+</html>
